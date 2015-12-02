@@ -36,6 +36,133 @@ class Suppress(StringIO):
         if last_char == '\n':
             self.truncate(self.len-1)
 
+class Redirect(object):
+    tmp_console_out = sys.__stdout__
+    tmp_console_err = sys.__stderr__
+    tmp_notebook_out = sys.stdout
+    tmp_notebook_err = sys.stderr
+    tmp_file_out = None
+    tmp_file_err = None
+    tmp_buffer_out = None
+    tmp_buffer_err = None
+    
+    streams = {
+        'console': {'stderr': 'console_err', 'stdout': 'console_out'},
+        'file': {'stderr': 'file_err', 'stdout': 'file_out'},
+        'ipynb': {'stderr': 'notebook_err', 'stdout': 'notebook_out'},
+        'buffer': {'stderr': 'buffer_err', 'stdout': 'buffer_out'}
+    }
+    
+    def __init__(self, stream_name=None):
+        """Context Manager for redirecting stdout and stderr
+        
+        Parameters
+        ----------
+        stream_name : str
+            Stream to redirect to.  Must be chosen from 'console', 'file', 'buffer'
+            'ipynb' is always assumed as primary stream reinstate
+            'file' always outputs to stdout.log and stderr.log in the current
+                working directory
+            
+            
+            
+        Example
+        -------
+        >>> with Redirect('file') as r:
+                print 'Something to redirect'
+                
+        >>> open('stdout.log').read()
+        ... 'Something to redirect'
+        
+        """
+        if stream_name and stream_name in self.streams:
+            self.stream_name = stream_name
+            self.stream_out = None
+            self.stream_err = None
+        else:
+            choices = '"\n\t"'.join(self.streams.keys())
+            response = 'Choose one of the following streams:\n\t"{}"'
+            response = response.format(choices)
+            raise ValueError(response)
+            
+    def __enter__(self):
+        self.new_stream = self.streams[self.stream_name]
+        sys.stdout = eval('self.open_{}()'.format(self.new_stream['stdout']))
+        sys.stderr = eval('self.open_{}()'.format(self.new_stream['stderr']))
+        
+        self.stream_out = sys.stdout
+        self.stream_err = sys.stderr
+        return self
+            
+    
+    def __exit__(self, type, value, traceback):
+        exec 'self.close_{}()'.format(self.new_stream['stdout'])
+        exec 'self.close_{}()'.format(self.new_stream['stderr'])
+        
+        if not sys.stdout.closed:
+            sys.stdout.flush()
+            
+        if not sys.stderr.closed:
+            sys.stderr.flush()
+        
+        sys.stdout = self.tmp_notebook_out
+        sys.stderr = self.tmp_notebook_err
+        
+        self.stream_out = None
+        self.stream_err = None
+    
+    def open_console_out(self):
+        return self.tmp_console_out
+    
+    def open_console_err(self):
+        return self.tmp_console_err
+    
+    def open_notebook_out(self):
+        return self.tmp_notebook_out
+    
+    def open_notebook_err(self):
+        return self.tmp_notebook_err
+    
+    def open_file_out(self):
+        self.tmp_file_out = open('stdout.log', 'wb')
+        return self.tmp_file_out
+    
+    def open_file_err(self):
+        self.tmp_file_err = open('stderr.log', 'wb')
+        return self.tmp_file_err
+    
+    def open_buffer_out(self):
+        self.tmp_buffer_out = StringIO()
+        return self.tmp_buffer_out
+    
+    def open_buffer_err(self):
+        self.tmp_buffer_err = StringIO()
+        return self.tmp_buffer_err
+    
+    def close_console_out(self):
+        pass
+    
+    def close_console_err(self):
+        pass
+    
+    def close_notebook_out(self):
+        pass
+    
+    def close_notebook_err(self):
+        pass
+    
+    def close_file_out(self):
+        self.tmp_file_out.close()
+    
+    def close_file_err(self):
+        self.tmp_file_err.close()
+    
+    def close_buffer_out(self):
+        self.tmp_buffer_out.close()
+    
+    def close_buffer_err(self):
+        self.tmp_buffer_err.close()
+
 def _slide_tag(image, sentence):
     """HTML formatter for two panel slide
 
@@ -105,7 +232,7 @@ def slide(sentence, ordered=False):
 def mplrc(rcParam, value):
     """
     Context Manager for matplotlib rcParams.  Parameter will be changed wihtin
-    context then returned to original value
+    context, then returned to original value.
 
     Parameters
     ---------
