@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from ipytools import slide, mplrc, hdisplay
+from ipytools import mplrc, hdisplay
 
 with mplrc('figure.figsize', (12, 4)):
     fig, axes = plt.subplots(1, 2)
