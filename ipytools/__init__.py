@@ -1,1 +1,1 @@
-from _core import Suppress, slide, mplrc, hdisplay
+from _core import Suppress, Redirect, slide, mplrc, hdisplay
