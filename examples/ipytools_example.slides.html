@@ -305,7 +305,6 @@ div.output_prompt {
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
 
 <span class="o">%</span><span class="k">matplotlib</span> inline
-<span class="o">%</span><span class="k">reload_ext</span> export
 
 <span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">mpl_style</span> <span class="o">=</span> <span class="s">&#39;default&#39;</span>
 
@@ -1184,88 +1183,6 @@ if(typeof(mpld3) !== "undefined" && mpld3._mpld3IsLoaded){
     
 </div>
 
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="o">%</span><span class="k">export</span> --to slides --template slides_reveal.tpl
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-
-
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-
-            var cells = $('div.cell'); 
-            var nCell = cells.length;
-            var last = cells[nCell - 1];
-            last.remove()
-            
-</script>
-</div>
-
-</div>
-
-<div class="output_area"><div class="prompt"></div>
-
-
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-
-            var cells = $('div.cell.code_cell');
-            var nCell = cells.length;
-
-            for (var i=0; i<nCell; i++){
-                var input_prompt = cells[i].getElementsByClassName('prompt input_prompt')
-                var output_prompt = cells[i].getElementsByClassName('prompt output_prompt')
-                
-                input_prompt[0].innerHTML = 'In&nbsp;[' + (i + 1) + ']:'
-                
-                if (output_prompt.length > 0){
-                    output_prompt[0].innerHTML = '' //Out[' + i + ']:
-                }
-            }
-            
-</script>
-</div>
-
-</div>
-
-<div class="output_area"><div class="prompt"></div>
-
-
-<div class="output_subarea output_javascript ">
-<script type="text/javascript">
-
-            IPython.notebook.save_checkpoint()
-            
-</script>
-</div>
-
-</div>
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stderr output_text">
-<pre>[NbConvertApp] Converting notebook Export Magic Test.ipynb to slides
-[NbConvertApp] Writing 844440 bytes to Export Magic Test.slides.html
-</pre>
-</div>
 </div>
 
 </div>
