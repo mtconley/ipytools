@@ -6,6 +6,54 @@ from contextlib import contextmanager
 from StringIO import StringIO
 import sys
 
+def _print_error(e):
+    """Traceback formatter for handled exceptions
+
+    Parameters
+    ----------
+    e : Exception
+        Exception caught in try/except clause
+
+    Example
+    -------
+    try:
+        raise Exception
+    except Exception as e:
+        _print_error(e)
+
+    """
+    string = '\n\t'.join([
+            '{0}', # Exception Type
+            'filename: {1}', # filename
+            'lineno: {2}\n']) # lineno of error
+
+    fname = sys.exc_info()[2].tb_frame.f_code.co_filename
+    tb_lineno = sys.exc_info()[2].tb_lineno
+
+    args = (repr(e), fname, tb_lineno)
+    sys.stderr.write(string.format(*args))
+    sys.stderr.flush()
+
+
+def _is_notebook():
+    try:
+        from IPython.core.interactiveshell import InteractiveShell
+        from IPython.kernel.zmq.zmqshell import ZMQInteractiveShell as notebook
+        from IPython.terminal.interactiveshell import TerminalInteractiveShell as shell
+        if InteractiveShell.initialized():
+            ip = get_ipython()
+            if isinstance(ip, notebook):
+                return True
+            elif isinstance(ip, shell):
+                return False
+            else:
+                raise Exception('Wrong Shell')
+        else:
+            return False
+    except Exception as e:
+        _print_error(e)
+        return False
+
 class Suppress(StringIO):
     """Context manager to suppress output (stdout and stderr)
     Output is written to buffer
@@ -75,6 +123,7 @@ class Redirect(object):
         ... 'Something to redirect'
         
         """
+
         if stream_name and stream_name in self.streams:
             self.stream_name = stream_name
             self.stream_out = None
@@ -158,10 +207,14 @@ class Redirect(object):
         self.tmp_file_err.close()
     
     def close_buffer_out(self):
-        self.tmp_buffer_out.close()
+        # Leave buffer open to access later
+        pass
+        # self.tmp_buffer_out.close()
     
     def close_buffer_err(self):
-        self.tmp_buffer_err.close()
+        # Leave buffer open to access later
+        pass
+        # self.tmp_buffer_err.close()
 
 def _slide_tag(image, sentence):
     """HTML formatter for two panel slide
