@@ -64,6 +64,7 @@ class Suppress(StringIO):
             print 'ERROR'
     
     >>> s.getvalue()
+        'ERROR'
     """
     def __enter__(self):
         self.tmp_stdout = sys.stdout
@@ -79,7 +80,7 @@ class Suppress(StringIO):
         return self
     
     def _remove_newline(self):
-        self.seek(s.len-1)
+        self.seek(self.len-1)
         last_char = self.read()
         if last_char == '\n':
             self.truncate(self.len-1)
