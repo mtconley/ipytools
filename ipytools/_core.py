@@ -186,7 +186,7 @@ def _slide_tag(image, sentence):
             </div>
         </div>
     """.format(image=image, sentence=sentence)
-    display(HTML(html))
+    return html
 
 @contextmanager
 def slide(sentence, ordered=False):
@@ -226,6 +226,7 @@ def slide(sentence, ordered=False):
     else:
         sentence = '<p>{}</p>'.format(sentence)
     _slide_tag(image, sentence)
+    display(HTML(html))
     plt.close()
 
 @contextmanager
