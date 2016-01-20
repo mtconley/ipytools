@@ -5,6 +5,7 @@ from contextlib import contextmanager
 
 from StringIO import StringIO
 import sys
+import re
 
 def _print_error(e):
     """Traceback formatter for handled exceptions
@@ -359,3 +360,39 @@ def hdisplay(*args):
         for arg in args[1:]:
             string += opener + _get_repr(arg) + closer
         display(HTML(string))
+
+
+
+def get_classname(instance_object):
+    """Return the class name of some instance object
+
+    Parameters
+    ----------
+    instance_object : object
+        the instance object to inspect
+
+    Returns
+    -------
+    classname : str
+        classname of instance_object
+
+    Examples
+    --------
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from sklearn.linear_model import LinearRegression
+    >>> classifiers = [
+    ...     RandomForestClassifier(), 
+    ...     LinearRegression()
+    ... ]
+    >>> for clf in classifiers:
+    ...     print get_classname(clf)
+    ...
+        RandomForestClassifier
+        LinearRegression
+
+    """
+    pattern = "<class '(.*)'>"
+    classname = re.findall(pattern, str(type(instance_object)))
+    classname = classname[0] if len(classname) else ''
+    classname = classname.split('.')[-1]
+    return classname if len(classname) else None
