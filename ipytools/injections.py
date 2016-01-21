@@ -3,6 +3,8 @@
 from IPython.display import HTML
 
 def toggle_input_cells():
+    """ Add toggle button to hide and unhide code cells in live ipynb session
+    """
     return HTML('''<script>
     code_show=true; 
     function code_toggle() {
