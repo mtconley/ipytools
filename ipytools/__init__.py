@@ -1,1 +1,1 @@
-from _core import Suppress, Redirect, slide, mplrc, hdisplay
+from _core import Suppress, Redirect, Timer, slide, mplrc, hdisplay, get_classname
