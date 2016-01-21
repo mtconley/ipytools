@@ -411,13 +411,13 @@ class Timer(object):
     ...
     >>>
     >>> print t.show()
-        0:0:1.002275
+        0:0:1.002276
     >>>
     >>> print t.total_seconds()
-        1.00227594376
+        1.002276
     >>>
     >>> print t
-        0 Days, 0 Hours, 0 Minutes, 1 Seconds, 2275 Microseconds
+        0 Days, 0 Hours, 0 Minutes, 1 Seconds, 2276 Microseconds
 
     """
     def __init__(self):
@@ -431,7 +431,7 @@ class Timer(object):
     
     def __exit__(self, type, value, traceback):
         self._end_time = time.time()
-        self._runtime = self._end_time - self._start_time
+        self._runtime = round(self._end_time - self._start_time, 6)
         self._calculate()
         
     def _calculate(self):
