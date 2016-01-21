@@ -396,3 +396,69 @@ def get_classname(instance_object):
     classname = classname[0] if len(classname) else ''
     classname = classname.split('.')[-1]
     return classname if len(classname) else None
+
+
+class Timer(object):
+    """Context manager to time the runtime of a set of operations
+
+    Example
+    -------
+    >>> with Timer() as t:
+    ...     time.sleep(1)
+    ...
+    >>>
+    >>> print t.show()
+        0:0:1.002275
+    >>>
+    >>> print t.total_seconds()
+        1.00227594376
+    >>>
+    >>> print t
+        0 Days, 0 Hours, 0 Minutes, 1 Seconds, 2275 Microseconds
+
+    """
+    def __init__(self):
+        self._start_time = None
+        self._end_time = None
+        self._runtime = None
+        
+    def __enter__(self):
+        self._start_time = time.time()
+        return self
+    
+    def __exit__(self, type, value, traceback):
+        self._end_time = time.time()
+        self._runtime = self._end_time - self._start_time
+        self._calculate()
+        
+    def _calculate(self):
+        self.seconds = int(self._runtime)
+        self.microseconds = int((self._runtime - self.seconds) * 1e6)
+        
+        self.minutes, self.seconds = divmod(self.seconds, 60)
+        self.hours, self.minutes = divmod(self.minutes, 60)
+        self.days, self.hours = divmod(self.hours, 24)
+        
+    def total_seconds(self):
+        """return the runtime as a float value in seconds"""
+        
+        return self._runtime
+    
+    def show(self):
+        """show the runtime in %H:%M%S.%f format"""
+        
+        timestr = '{hours}:{minutes}:{seconds}.{microseconds:0>6d}'.format(**self.__dict__)
+        if self.days:
+            timestr = '{days} Days, '.format(self.days) + timestr
+        return timestr
+    
+    def __repr__(self):
+        values = [
+            '{} Days'.format(self.days),
+            '{} Hours'.format(self.hours),
+            '{} Minutes'.format(self.minutes),
+            '{} Seconds'.format(self.seconds),
+            '{} Microseconds'.format(self.microseconds)
+        ]
+        timestr = ', '.join(values)
+        return timestr
