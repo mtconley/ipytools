@@ -273,6 +273,9 @@ def slide(sentence, ordered=False):
     """
     yield
     image = mpld3.fig_to_html(plt.gcf())
+    if isinstance(sentence, buffer):
+        sentence = sentence.getvalue()
+        
     if isinstance(sentence, list):
         list_type = ['ul', 'ol'][ordered]
         sentence = '<{0}>\n<li>{1}</li>\n</{0}>'.format(
@@ -280,7 +283,7 @@ def slide(sentence, ordered=False):
         )
     else:
         sentence = '<p>{}</p>'.format(sentence)
-    _slide_tag(image, sentence)
+    html = _slide_tag(image, sentence)
     display(HTML(html))
     plt.close()
 
