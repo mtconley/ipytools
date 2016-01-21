@@ -229,6 +229,9 @@ def _slide_tag(image, sentence):
         Plot description and commentary
     """
 
+    sentence = sentence.replace(' ', '&nbsp;')
+    sentence = sentence.replace('\n', '<br>')
+
     html = """
         <div class="slide_container" style="width:840px;">
             <div class="figure_box" style="display:inline-block; float:left;">
