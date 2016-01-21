@@ -4,8 +4,7 @@ from IPython.display import HTML, Image, display
 from contextlib import contextmanager
 
 from StringIO import StringIO
-import sys
-import re
+import sys, re, time
 
 def _print_error(e):
     """Traceback formatter for handled exceptions
@@ -273,9 +272,7 @@ def slide(sentence, ordered=False):
     """
     yield
     image = mpld3.fig_to_html(plt.gcf())
-    if isinstance(sentence, buffer):
-        sentence = sentence.getvalue()
-        
+
     if isinstance(sentence, list):
         list_type = ['ul', 'ol'][ordered]
         sentence = '<{0}>\n<li>{1}</li>\n</{0}>'.format(
