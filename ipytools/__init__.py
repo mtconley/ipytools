@@ -6,4 +6,4 @@ from _core import (Suppress,
                    hdisplay, 
                    get_classname)
 
-from injections import (toggle_input_cell)
+import injections
