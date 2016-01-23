@@ -66,11 +66,19 @@ class Suppress(StringIO):
     >>> s.getvalue()
         'ERROR'
     """
+    def __init__(self, file_object=None):
+        if file_object == None:
+            self.buf = self
+        else:
+            self.buf = file_object
+
+        StingIO.__init__(self)
+
     def __enter__(self):
         self.tmp_stdout = sys.stdout
         self.tmp_stderr = sys.stderr
-        sys.stdout = self
-        sys.stderr = self
+        sys.stdout = self.buf
+        sys.stderr = self.buf
         return self
     
     def __exit__(self, type, value, traceback):
