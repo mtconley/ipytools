@@ -67,31 +67,35 @@ class Suppress(StringIO):
         'ERROR'
     """
     def __init__(self, file_object=None):
-        if file_object == None:
-            self.buf = self
+        if file_object:
+            self.buffer = file_object
         else:
-            self.buf = file_object
+            self.buffer = self
 
-        StingIO.__init__(self)
+        StringIO.__init__(self)
 
     def __enter__(self):
         self.tmp_stdout = sys.stdout
         self.tmp_stderr = sys.stderr
-        sys.stdout = self.buf
-        sys.stderr = self.buf
+        sys.stdout = self.buffer
+        sys.stderr = self.buffer
         return self
     
     def __exit__(self, type, value, traceback):
+        self._remove_newline()
         sys.stdout = self.tmp_stdout
         sys.stderr = self.tmp_stderr
-        self._remove_newline()
+        
         return self
     
     def _remove_newline(self):
-        self.seek(self.len-1)
-        last_char = self.read()
+        self.buffer.seek(self.len-1)
+        last_char = self.buffer.read()
         if last_char == '\n':
-            self.truncate(self.len-1)
+            self.buffer.truncate(self.buffer.len-1)
+
+    def __repr__(self):
+        return self.buffer.getvalue()
 
 class Redirect(object):
     tmp_console_out = sys.__stdout__
