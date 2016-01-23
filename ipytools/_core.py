@@ -66,25 +66,34 @@ class Suppress(StringIO):
     >>> s.getvalue()
         'ERROR'
     """
-    def __init__(self, file_object=None):
+    def __init__(self, file_object=None, fd=1):
         if file_object:
             self.buffer = file_object
         else:
             self.buffer = self
 
+        self.fd = 1
+
         StringIO.__init__(self)
 
     def __enter__(self):
-        self.tmp_stdout = sys.stdout
-        self.tmp_stderr = sys.stderr
-        sys.stdout = self.buffer
-        sys.stderr = self.buffer
+        if self.fd in [1, 3]:
+            self.tmp_stdout = sys.stdout
+            sys.stdout = self.buffer
+
+        if self.fd in [2, 3]:
+            self.tmp_stderr = sys.stderr
+            sys.stderr = self.buffer
+        
         return self
     
     def __exit__(self, type, value, traceback):
         self._remove_newline()
-        sys.stdout = self.tmp_stdout
-        sys.stderr = self.tmp_stderr
+        if self.fd in [1, 3]:
+            sys.stdout = self.tmp_stdout
+
+        if self.fd in [2, 3]:
+            sys.stderr = self.tmp_stderr
         
         return self
     
