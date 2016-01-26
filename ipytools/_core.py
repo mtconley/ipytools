@@ -538,11 +538,14 @@ class HTMLbuffer(StringIO):
 
 class SlideStack:
     class __SlideStack:
+        call_count = 0
+
         def __init__(self):
             self.refresh()
           
         def refresh(self):
             self.stack = []
+            self.call_count = 0
             
         def push(self, slide_html):
             self.stack.append(slide_html)
@@ -561,6 +564,8 @@ class SlideStack:
     def __init__(self, *slides):
         if not SlideStack.instance:
             SlideStack.instance = SlideStack.__SlideStack()
+        else:
+            SlideStack.instance.call_count += 1
 
         for slide_html in slides:
             self.push(slide_html)
@@ -569,7 +574,7 @@ class SlideStack:
         return getattr(SlideStack.instance, name)
     
     def destroy(self):
-        SlideStack.instance.destroy()
+        SlideStack.instance.refresh()
         self.instance = None
 
 
@@ -636,7 +641,7 @@ class Presentation(object):
         self.build_html()
         self.save()
         self.presentation = self.presentation.stack
-        SlideStack().refresh()
+        SlideStack().destroy()
 
     def __len__(self):
         return len(self.presentation)
