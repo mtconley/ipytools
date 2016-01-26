@@ -547,7 +547,6 @@ class SlideStack(object):
         self.stack.append(slide_html)
         
     def destroy(self):
-        self.stack = []
         self.__class__.instance = False
         self._shared_state = {}
 
