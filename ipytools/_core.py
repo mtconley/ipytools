@@ -573,7 +573,7 @@ class SlideStack:
         self.instance = None
 
 
-class ConetextError(Exception):
+class ContextError(Exception):
     def __init__(self, message=None):
         
         err_str = 'Cannot create object within existing object context'
