@@ -1,10 +1,20 @@
+
+
+import random, re, sys, time
+
 import matplotlib.pyplot as plt
 import mpld3
-from IPython.display import HTML, Image, display
-from contextlib import contextmanager
 
+from contextlib import contextmanager
+from datetime import datetime
+from IPython.display import HTML, Image, display
+from jinja2 import Template
 from StringIO import StringIO
-import sys, re, time, random
+
+
+
+
+
 
 from ._presentation_tpl import _template
 
