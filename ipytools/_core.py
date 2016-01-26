@@ -293,7 +293,6 @@ def slide(layout=1, buf=None):
         None will invoke an HTMLbuffer object
     """
     
-    EMPTY_FIG_SIZE = 64
     try:
         if isinstance(buf, str):
             buf = open(buf, 'wb')
@@ -303,17 +302,13 @@ def slide(layout=1, buf=None):
         with Suppress(buf) as s:
             yield
         
-        fig = plt.gcf()
-        if sys.getsizeof(fig) > EMPTY_FIG_SIZE:
-            image = mpld3.fig_to_html(fig)
-        else:
-            image = ''
+        image = mpld3.fig_to_html(plt.gcf())
+
             
         text = buf.getvalue()
         html = _slide_tag(image, text)
         
-        pres = SlideStack()
-        pres.push(html)
+        pres = SlideStack(html)
         
         plt.close()
         buf.close()
@@ -615,7 +610,7 @@ class Presentation(object):
         with open(self.name, 'wb') as f:
             f.write(self.html)
 
-    def build_html(self):    
+    def build_html(self):
         template = Template(_template)
         html = template.render(presentation=self.presentation, cdn=self.cdn, version=self.version)
         self.html = html
