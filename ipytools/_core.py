@@ -304,8 +304,8 @@ def slide(layout=1, buf=None):
             yield
         
         fig = plt.gcf()
-        if os.sys.getsizeof(fig) > EMPTY_FIG_SIZE:
-            image = mpld3.fig_to_html()
+        if sys.getsizeof(fig) > EMPTY_FIG_SIZE:
+            image = mpld3.fig_to_html(fig)
         else:
             image = ''
             
@@ -586,7 +586,7 @@ class Presentation(object):
     version = '2.6.2'
     
     def __init__(self, name=None, cdn=None, version=None):
-        self.name = name or self._name_presentation()
+        self._name_presentation(name)
         self.cdn = cdn or self.cdn
         self.version = version or self.version
         
@@ -603,8 +603,10 @@ class Presentation(object):
         now = dt.strftime('%Y%m%d')
         return now
     
-    def _name_presentation(self):
-        if self.name == None:
+    def _name_presentation(self, name):
+        if name:
+            self.name = name
+        else:
             salt = self._make_salt()
             now = self._now()
             self.name = 'presentation_{}_{}.slides.html'.format(salt, now)
