@@ -573,6 +573,16 @@ class SlideStack:
         self.instance = None
 
 
+class ConetextError(Exception):
+    def __init__(self, message=None):
+        
+        err_str = 'Cannot create object within existing object context'
+        if message:
+            err_str = '{0}\n\n\t{1}'.format(err_str, message)
+            
+        Exception.__init__(self, err_str)
+
+
 class Presentation(object):
     name = None
     html = None
@@ -616,12 +626,17 @@ class Presentation(object):
         self.html = html
     
     def __enter__(self):
+        if len(SlideStack()) > 0:
+            msg = 'Presentation object already exists'
+            raise ContextError(msg)
         self.presentation = SlideStack()
         return self
     
     def __exit__(self, type, value, traceback):
         self.build_html()
         self.save()
+        self.presentation = self.presentation.stack
+        SlideStack().refresh()
 
     def __len__(self):
         return len(self.presentation)
