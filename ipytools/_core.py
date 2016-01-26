@@ -564,8 +564,8 @@ class SlideStack:
     def __init__(self, *slides):
         if not SlideStack.instance:
             SlideStack.instance = SlideStack.__SlideStack()
-        else:
-            SlideStack.instance.call_count += 1
+
+        SlideStack.instance.call_count += 1
 
         for slide_html in slides:
             self.push(slide_html)
