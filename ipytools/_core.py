@@ -500,7 +500,7 @@ class Timer(object):
         return timestr
 
 
-class HTMLbuffer(StringIO):
+class HTMLBuffer(StringIO):
     """Buffer adapter to parse python data to HTML"""
     def write(self, msg):
         msg = repr(msg)
