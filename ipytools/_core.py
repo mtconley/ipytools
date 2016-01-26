@@ -11,11 +11,6 @@ from IPython.display import HTML, Image, display
 from jinja2 import Template
 from StringIO import StringIO
 
-
-
-
-
-
 from ._presentation_tpl import _template
 
 def _print_error(e):
@@ -538,24 +533,24 @@ class HTMLbuffer(StringIO):
 
 class SlideStack(object):
     _shared_state = {}
-    
-    def __init__(self):
+    instance = False
+
+    def __init__(self, *slides):
         if not self._shared_state:
-            self._refresh()
-        else:
-            self.call_count += 1
+            self.__class__.instance = True
+            self.stack = []
             
-    def _refresh(self):
-        self.__class__._shared_state = {}
-        self.stack = []
-        self.call_count = 1
-        
+        for slide_html in slides:
+            self.stack.append(slide_html)
+            
     def push(self, slide_html):
         self.stack.append(slide_html)
         
     def destroy(self):
-        self._refresh()
-        
+        self.__class__._shared_state = {}
+        self.stack = []
+        self.__class__.instance = False
+
     def __getattr__(self, name):
         if name == '_shared_state':
             return self.__class__._shared_state
