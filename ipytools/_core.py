@@ -4,7 +4,7 @@ from IPython.display import HTML, Image, display
 from contextlib import contextmanager
 
 from StringIO import StringIO
-import sys, re, time
+import sys, re, time, random
 
 from ._presentation_tpl import _template
 
