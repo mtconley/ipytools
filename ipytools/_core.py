@@ -305,7 +305,8 @@ def slide(layout=1, buf=None):
 
         fig = plt.gcf()
         if fig.axes:
-            image = mpld3.fig_to_html(fig) 
+            image = mpld3.fig_to_html(fig)
+            fig.axes
         else:
             image = ''
                     
@@ -599,6 +600,7 @@ class SubSlideStack(object):
         else:
             text = '{0}\n{1}'.format(slide_html, self.ravel())
             SlideStack(text)
+            self.destroy()
         
     def destroy(self):
         self.__class__.depth = 0
@@ -676,7 +678,7 @@ class Presentation(object):
     @staticmethod
     def _now():
         dt = datetime.now()
-        now = dt.strftime('%Y%m%d%H%M%S')
+        now = dt.strftime('%Y%m%d%H%M')
         return now
     
     def _name_presentation(self, name):
@@ -685,7 +687,7 @@ class Presentation(object):
         else:
             salt = self._make_salt()
             now = self._now()
-            self.name = 'presentation_{}_{}.slides.html'.format(salt, now)
+            self.name = 'presentation_{}_{}.slides.html'.format(now, salt)
             
     def save(self):
         with open(self.name, 'wb') as f:
