@@ -79,7 +79,7 @@ class Suppress(StringIO):
         else:
             self.buffer = self
 
-        self.fd = 1
+        self.fd = fd
 
         StringIO.__init__(self)
 
