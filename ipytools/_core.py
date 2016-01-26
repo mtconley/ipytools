@@ -631,7 +631,7 @@ class Presentation(object):
         self.html = html
     
     def __enter__(self):
-        if SlideStack().call_count > 0:
+        if SlideStack().call_count > 1:
             msg = 'Presentation object already exists'
             raise ContextError(msg)
         self.presentation = SlideStack()
