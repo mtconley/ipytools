@@ -254,59 +254,60 @@ def _slide_tag(image, sentence):
     sentence = sentence.replace('\n', '<br>')
 
     html = """
-        <div class="slide_container" style="width:840px;">
+        <div class="slide_container" style="width:840px;display:inline-block;">
             <div class="figure_box" style="display:inline-block; float:left;">
                 {image}
             </div>
-              
+
             <div class="description_box" style="font-size:18px;padding-top:60px;font-family:Century Gothic;">
                 {sentence}
             </div>
         </div>
     """.format(image=image, sentence=sentence)
+    
     return html
 
 @contextmanager
-def slide(sentence, ordered=False):
-    """
-    Instantiate slide with HTML layout.  
-    Layout is two panels, left with plot, right with `sentence`
-
+def slide(layout=1, buf=None):
+    """Instantiate slide with HTML layout
+    
     Parameters
     ----------
-    sentence : str, list
-        Text to be placed in right panel.  If a list is entered, it will be 
-        converted to an HTML list
-
-    ordered : bool (defaul: False)
-        If sentence is a list, the list will be ordered.  If `False`, list will
-        be unordered
-
-    Example
-    -------
-    >>> import pandas as pd
-    >>> import numpy as np
-    >>> data = pd.DataFrame(np.random.randint(0, 10, 100)).cumsum(0)
-
-    >>> html_list = ['this is the first item', 
-                   'this is the second item', 
-                   'one more for good measure']
-    >>> with slide(html_list, True):
-            plt.plot(data)
+    layout : int
+        Layout id for SlideTemplate factory
+        
+    buf : filepath or buffer, optional
+        Buffer like object for slide to print to, default is None.  
+        None will invoke an HTMLbuffer object
     """
-    yield
-    image = mpld3.fig_to_html(plt.gcf())
-
-    if isinstance(sentence, list):
-        list_type = ['ul', 'ol'][ordered]
-        sentence = '<{0}>\n<li>{1}</li>\n</{0}>'.format(
-           list_type, '</li>\n<li>'.join(sentence)
-        )
-    else:
-        sentence = '<p>{}</p>'.format(sentence)
-    html = _slide_tag(image, sentence)
-    display(HTML(html))
-    plt.close()
+    
+    EMPTY_FIG_SIZE = 64
+    try:
+        if isinstance(buf, str):
+            buf = open(buf, 'wb')
+        elif buf is None:
+            buf = HTMLbuffer()
+        
+        with ipt.Suppress(buf) as s:
+            yield
+        
+        fig = plt.gcf()
+        if os.sys.getsizeof(fig) > EMPTY_FIG_SIZE:
+            image = mpld3.fig_to_html()
+        else:
+            image = ''
+            
+        text = buf.getvalue()
+        html = _slide_tag(image, text)
+        
+        pres = SlideStack()
+        pres.push(html)
+        
+        plt.close()
+        buf.close()
+        
+    except Exception as e:
+        _print_error(e)
 
 @contextmanager
 def mplrc(rcParam, value):
@@ -486,3 +487,130 @@ class Timer(object):
         ]
         timestr = ', '.join(values)
         return timestr
+
+
+class HTMLbuffer(StringIO):
+    """Buffer adapter to parse python data to HTML"""
+    def write(self, msg):
+        msg = repr(msg)
+        try:
+            msg = eval(msg)
+        except Exception as e:
+            _print_error(e)
+                
+        if isinstance(msg, list):
+            msg = self._list_to_ol(msg)
+        elif isinstance(msg, set):
+            msg = self._list_to_ul(msg)
+        else:
+            msg = msg.replace(' ', '&nbsp;')
+            msg = msg.replace('\n', '<br>')
+            msg = msg.replace('\t', '&nbsp;' * 4)
+
+        StringIO.write(self, msg)
+        
+    def _list_to_list(self, msg, list_type):
+        msg = """
+              <{0}>
+                  <li>{1}
+                  </li>
+              </{0}>
+              """.format(
+                list_type, '</li>\n<li>'.join(msg)
+              )
+        return msg
+    
+    def _list_to_ol(self, msg):
+        msg = self._list_to_list(msg, 'ol')
+        return msg
+    
+    def _list_to_ul(self, msg):
+        msg = self._list_to_liiiist(msg, 'ul')
+        return msg
+
+
+class SlideStack:
+    class __SlideStack:
+        def __init__(self):
+            self.refresh()
+          
+        def refresh(self):
+            self.stack = []
+            
+        def push(self, slide_html):
+            self.stack.append(slide_html)
+            
+        def __len__(self):
+            return len(self.stack)
+            
+        def __getitem__(self, item):
+            return self.stack[item]
+        
+        def __repr__(self):
+            return repr(self.stack)
+        
+        
+    instance = None
+    def __init__(self, *slides):
+        if not SlideStack.instance:
+            SlideStack.instance = SlideStack.__SlideStack()
+
+        for slide_html in slides:
+            self.push(slide_html)
+        
+    def __getattr__(self, name):
+        return getattr(SlideStack.instance, name)
+    
+    def destroy(self):
+        SlideStack.instance.destroy()
+        self.instance = None
+
+
+class Presentation(object):
+    name = None
+    html = None
+    presentation = None
+    cdn = 'https://cdn.jsdelivr.net/reveal.js'
+    version = '2.6.2'
+    
+    def __init__(self, name=None, cdn=None, version=None):
+        self.name = name or self._name_presentation()
+        self._create_file()
+        self.cdn = cdn or self.cdn
+        self.version = version or self.version
+        
+    @staticmethod
+    def _make_salt():
+        chars = range(48, 58) + range(97, 97 + 26)
+        salt_arr = [chr(random.choice(chars)) for _ in range(12)]
+        salt = ''.join(salt_arr)
+        return salt
+    
+    @staticmethod
+    def _now():
+        dt = datetime.now()
+        now = dt.strftime('%Y%m%d')
+        return now
+    
+    def _name_presentation(self):
+        if self.name == None:
+            salt = self._make_salt()
+            now = self._now()
+            self.name = 'presentation_{}_{}.slides.html'.format(salt, now)
+            
+    def save(self):
+        with open(self.name, 'wb') as f:
+            f.write(self.html)
+
+    def build_html(self):    
+        template = Template()
+        html = template.render(presentation=self.presentation, cdn=self.cdn, version=self.version)
+        self.html = html
+    
+    def __enter__(self):
+        self.presentation = SlideStack()
+        return self
+    
+    def __exit__(self, type, value, traceback):
+        self.build_html()
+        self.save()
