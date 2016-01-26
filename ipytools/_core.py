@@ -553,13 +553,13 @@ class SlideStack(object):
 
     def __getattr__(self, name):
         if name == '_shared_state':
-            return self.__class__._shared_state
+            return self._shared_state
         else:
             return self._shared_state[name]
         
     def __setattr__(self, name, value):
         if name == '_shared_state':
-            return self.__class__._shared_state
+            return self._shared_state
         else:
             self._shared_state[name] = value
         
