@@ -595,7 +595,7 @@ class Presentation(object):
     @staticmethod
     def _now():
         dt = datetime.now()
-        now = dt.strftime('%Y%m%d')
+        now = dt.strftime('%Y%m%d%H%M%S')
         return now
     
     def _name_presentation(self, name):
