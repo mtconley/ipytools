@@ -629,6 +629,6 @@ class Presentation(object):
     def __getitem__(self, item):
         return self.presentation[item]
 
-    def __repr__(self):
+    def _repr_html_(self):
         for slide in self.presentation:
             display(HTML(slide))
