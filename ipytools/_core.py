@@ -292,22 +292,31 @@ def slide(layout=1, buf=None):
         if isinstance(buf, str):
             buf = open(buf, 'wb')
         elif buf is None:
-            buf = HTMLbuffer()
-        
-        with Suppress(buf) as s:
-            yield
-        
-        image = mpld3.fig_to_html(plt.gcf())
+            buf = HTMLBuffer()
 
-            
+
+        with SubSlideStack() as sub_slides:
+            if sub_slides.depth > 2:
+                raise ContextError("""Maximum allowable slide depth exceeded.  
+                Slide with be ignored.""")
+            else:
+                with Suppress(buf) as s:
+                    yield
+
+        fig = plt.gcf()
+        if fig.axes:
+            image = mpld3.fig_to_html(fig) 
+        else:
+            image = ''
+                    
         text = buf.getvalue()
         html = _slide_tag(image, text)
         
-        pres = SlideStack(html)
-        
+        sub_slides.push(html)
+
         plt.close()
         buf.close()
-        
+            
     except Exception as e:
         _print_error(e)
 
@@ -549,12 +558,13 @@ class SlideStack(object):
     def destroy(self):
         self.__class__.instance = False
         self._shared_state = {}
+        self.__class__._shared_state = {}
 
     def __getattr__(self, name):
         if name == '_shared_state':
             return self._shared_state
         else:
-            return self._shared_state[name]
+            return self._shared_state.get(name, None)
         
     def __setattr__(self, name, value):
         if name == '_shared_state':
@@ -570,6 +580,68 @@ class SlideStack(object):
         
     def __repr__(self):
         return repr(self.stack)
+
+
+class SubSlideStack(object):
+    _shared_state = {}
+    depth = 0
+
+    def __init__(self, *slides):
+        if not self._shared_state:
+            self.stack = []
+            
+        for slide_html in slides:
+            self.stack.append(slide_html)
+            
+    def push(self, slide_html):
+        if self.depth:
+            self.stack.append(slide_html)
+        else:
+            text = '{0}\n{1}'.format(slide_html, self.ravel())
+            SlideStack(text)
+        
+    def destroy(self):
+        self.__class__.depth = 0
+        self._shared_state = {}
+        self.__class__._shared_state = {}
+
+    def ravel(self):
+        if self.stack:
+            html = '\n</section>\n<section>\n    '.join(self.stack)
+            return '<section>\n    {}\n</section>\n'.format(html)
+        else:
+            return ''
+        
+    def __enter__(self):
+        self.__class__.depth += 1
+        return self
+    
+    def __exit__(self, type, value, traceback):
+        self.__class__.depth -= 1
+        
+
+    def __getattr__(self, name):
+        if name == '_shared_state':
+            return self._shared_state
+        else:
+            return self._shared_state.get(name, None)
+        
+    def __setattr__(self, name, value):
+        if name == '_shared_state':
+            return self._shared_state
+        else:
+            self._shared_state[name] = value
+        
+    def __len__(self):
+        return len(self.stack)
+
+    def __getitem__(self, item):
+        return self.stack[item]
+        
+    def __repr__(self):
+        return repr(self.stack)
+    
+
 
 
 class ContextError(Exception):
