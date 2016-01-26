@@ -587,7 +587,6 @@ class Presentation(object):
     
     def __init__(self, name=None, cdn=None, version=None):
         self.name = name or self._name_presentation()
-        self._create_file()
         self.cdn = cdn or self.cdn
         self.version = version or self.version
         
