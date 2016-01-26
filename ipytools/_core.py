@@ -536,46 +536,46 @@ class HTMLbuffer(StringIO):
         return msg
 
 
-class SlideStack:
-    class __SlideStack:
-        call_count = 0
-
-        def __init__(self):
-            self.refresh()
-          
-        def refresh(self):
-            self.stack = []
-            self.call_count = 0
+class SlideStack(object):
+    _shared_state = {}
+    
+    def __init__(self):
+        if not self._shared_state:
+            self._refresh()
+        else:
+            self.call_count += 1
             
-        def push(self, slide_html):
-            self.stack.append(slide_html)
-            
-        def __len__(self):
-            return len(self.stack)
-            
-        def __getitem__(self, item):
-            return self.stack[item]
+    def _refresh(self):
+        self.__class__._shared_state = {}
+        self.stack = []
+        self.call_count = 1
         
-        def __repr__(self):
-            return repr(self.stack)
+    def push(self, slide_html):
+        self.stack.append(slide_html)
         
-        
-    instance = None
-    def __init__(self, *slides):
-        if not SlideStack.instance:
-            SlideStack.instance = SlideStack.__SlideStack()
-
-        SlideStack.instance.call_count += 1
-
-        for slide_html in slides:
-            self.push(slide_html)
+    def destroy(self):
+        self._refresh()
         
     def __getattr__(self, name):
-        return getattr(SlideStack.instance, name)
-    
-    def destroy(self):
-        SlideStack.instance.refresh()
-        self.instance = None
+        if name == '_shared_state':
+            return self.__class__._shared_state
+        else:
+            return self._shared_state[name]
+        
+    def __setattr__(self, name, value):
+        if name == '_shared_state':
+            return self.__class__._shared_state
+        else:
+            self._shared_state[name] = value
+        
+    def __len__(self):
+        return len(self.stack)
+
+    def __getitem__(self, item):
+        return self.stack[item]
+        
+    def __repr__(self):
+        return repr(self.stack)
 
 
 class ContextError(Exception):
@@ -634,6 +634,7 @@ class Presentation(object):
         if SlideStack().call_count > 1:
             msg = 'Presentation object already exists'
             raise ContextError(msg)
+
         self.presentation = SlideStack()
         return self
     
