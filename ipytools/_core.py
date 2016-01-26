@@ -6,6 +6,8 @@ from contextlib import contextmanager
 from StringIO import StringIO
 import sys, re, time
 
+from ._presentation_tpl import _template
+
 def _print_error(e):
     """Traceback formatter for handled exceptions
 
@@ -288,7 +290,7 @@ def slide(layout=1, buf=None):
         elif buf is None:
             buf = HTMLbuffer()
         
-        with ipt.Suppress(buf) as s:
+        with Suppress(buf) as s:
             yield
         
         fig = plt.gcf()
@@ -603,7 +605,7 @@ class Presentation(object):
             f.write(self.html)
 
     def build_html(self):    
-        template = Template()
+        template = Template(_template)
         html = template.render(presentation=self.presentation, cdn=self.cdn, version=self.version)
         self.html = html
     
