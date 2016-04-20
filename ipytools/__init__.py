@@ -1,7 +1,7 @@
 from _core import (Suppress, 
                    Redirect, 
                    Timer,
-                   Presentation,
+                   Presentation,s
                    slide, 
                    mplrc, 
                    hdisplay, 

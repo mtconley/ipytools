@@ -33,15 +33,14 @@ def install_magics(directory):
 
 def install_templates(directory):
 
-    if not os.path.exists(directory):
-        tpl_dir = os.path.join(directory, 'templates')
+    tpl_dir = os.path.join(directory, 'templates')
+    if not os.path.exists(tpl_dir):
         os.mkdir(tpl_dir)
-    directory = os.path.join(directory, 'templates')
     templates = os.path.join(os.getcwd(), 'ipytools', 'nbconvert_templates', '*')
     files = glob.glob(templates)
     for src in files:
         name = os.path.basename(src)
-        shutil.copy(src, directory)
+        shutil.copy(src, tpl_dir)
 
 
 setup(**config)

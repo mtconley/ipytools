@@ -37,7 +37,10 @@ def _print_error(e):
     fname = sys.exc_info()[2].tb_frame.f_code.co_filename
     tb_lineno = sys.exc_info()[2].tb_lineno
 
-    args = (repr(e), fname, tb_lineno)
+    error_type = type(e).__name__
+    error_str = '{}: {}'.format(error_type, '\n\t'.join(e))
+    
+    args = (error_str, fname, tb_lineno)
     sys.stderr.write(string.format(*args))
     sys.stderr.flush()
 
@@ -306,7 +309,6 @@ def slide(layout=1, buf=None):
         fig = plt.gcf()
         if fig.axes:
             image = mpld3.fig_to_html(fig)
-            fig.axes
         else:
             image = ''
                     
