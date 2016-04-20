@@ -1,4 +1,4 @@
-import os
+import os, sys
 
 import json
 import urllib2
@@ -31,16 +31,24 @@ def get_notebook_name():
     -----
     The python in this function could be replaced with Javascript
     """
+    load = lambda url: json.load(urllib2.urlopen(url+'api/sessions'))
+    base = lambda path: os.path.basename(path)
+    nbpath = lambda session: base(session['notebook']['path'])
+    nbid = lambda session: session['kernel']['id']
+
     connection_file_path = kernel.get_connection_file()
-    connection_file = os.path.basename(connection_file_path)
+    connection_file = base(connection_file_path)
     kernel_id = connection_file.split('-', 1)[1].split('.')[0]
 
-    url = list(list_running_servers())[0]['url']
-    sessions = json.load(urllib2.urlopen(url+'api/sessions'))
-    for sess in sessions:
-        if sess['kernel']['id'] == kernel_id:
-            notebook_name = sess['notebook']['path'].split('/')[-1]
-            return notebook_name
+    sessions = [load(data['url']) for data in list_running_servers()]
+    sessions = reduce(list.__add__, sessions) if isinstance(sessions[0], list) else sessions
+    
+    notebook_name = [nbpath(sess) for sess in sessions if nbid(sess) == kernel_id]
+    if notebook_name:
+        return notebook_name[0]
+    else:
+        sys.stderr.write('No notebook name was found.  Export manually.')
+        sys.stderr.flush()
 
 def get_files(directory='~/.ipython/extensions/templates', ext='.tpl'):
     """
