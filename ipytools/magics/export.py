@@ -31,7 +31,13 @@ def get_notebook_name():
     -----
     The python in this function could be replaced with Javascript
     """
-    load = lambda url: json.load(urllib2.urlopen(url+'api/sessions'))
+    def sess_open(url):
+        try:
+            urllib2.urlopen(url+'api/sessions')
+            return True
+        except:
+            return False
+    load = lambda url: json.loads(urllib2.urlopen(url+'api/sessions').fp.read())
     base = lambda path: os.path.basename(path)
     nbpath = lambda session: base(session['notebook']['path'])
     nbid = lambda session: session['kernel']['id']
@@ -40,9 +46,9 @@ def get_notebook_name():
     connection_file = base(connection_file_path)
     kernel_id = connection_file.split('-', 1)[1].split('.')[0]
 
-    sessions = [load(data['url']) for data in list_running_servers()]
+    sessions = [load(data['url']) for data in list_running_servers() if sess_open(data['url'])]
     sessions = reduce(list.__add__, sessions) if isinstance(sessions[0], list) else sessions
-    
+
     notebook_name = [nbpath(sess) for sess in sessions if nbid(sess) == kernel_id]
     if notebook_name:
         return notebook_name[0]
